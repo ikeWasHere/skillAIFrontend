@@ -27,5 +27,3 @@ npm run build    # tsc -b && vite build
 npm run lint     # oxlint
 npm run preview  # serve the production build
 ```
-
-Product intent is documented in [PRODUCT.md](PRODUCT.md); the visual system in [DESIGN.md](DESIGN.md).
