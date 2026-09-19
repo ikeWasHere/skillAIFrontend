@@ -32,4 +32,3 @@ dist-ssr
 src/lib/impeccable/
 plugins/impeccable-live.client.ts
 
-docs/screenshots

@@ -5,7 +5,6 @@ import { Hero } from "./sections/Hero";
 import { TopSkills } from "./sections/TopSkills";
 import { TopCertificates } from "./sections/TopCertificates";
 import { TopRoles } from "./sections/TopRoles";
-import { Methodology } from "./sections/Methodology";
 import { Closing } from "./sections/Closing";
 import { DEFAULT_THRESHOLDS } from "./lib/trend";
 
@@ -19,7 +18,6 @@ function App() {
       <TopSkills role={role} thresholds={DEFAULT_THRESHOLDS} />
       <TopCertificates thresholds={DEFAULT_THRESHOLDS} />
       <TopRoles thresholds={DEFAULT_THRESHOLDS} />
-      <Methodology thresholds={DEFAULT_THRESHOLDS} />
       <Closing />
     </main>
   );
