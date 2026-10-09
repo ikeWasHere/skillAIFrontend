@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
-import {
-  TREND_BORDER,
-  TREND_FILL,
-  TREND_LABEL,
-  TREND_TEXT,
-  walk,
-  type Direction,
-} from "../lib/trend";
+
+import type { FilterOption } from "../lib/api";
 
 /* Class strings are written out in full rather than composed: Tailwind scans source
    text, so an interpolated class name would never be generated. */
@@ -52,54 +46,44 @@ export function MicroLabel({
   return <span className={`${LABEL[variant]} ${className}`}>{children}</span>;
 }
 
-/* ─── Trend pill ─── DESIGN.md §3.1
-   Outlined, never filled. Border and text share one value from the text map. */
+/* ─── Meter bar ─── DESIGN.md §3.2
+   Core skills take the amber fill; everything else stays ink. The small size is
+   for dense lists, where a 9px bar per row would outweigh the label. */
 
-export function TrendPill({ direction }: { direction: Direction }) {
-  return (
-    <span
-      className={`inline-block border bg-transparent px-2 py-1 font-mono text-[9.5px]/[1] tracking-[.12em] uppercase ${TREND_TEXT[direction]} ${TREND_BORDER[direction]}`}
-    >
-      {TREND_LABEL[direction]}
-    </span>
-  );
+interface MeterBarProps {
+  value: number;
+  tone?: "core" | "default";
+  size?: "md" | "sm";
 }
 
-/* ─── Meter bar ─── DESIGN.md §3.2 */
-
-export function MeterBar({ value, direction }: { value: number; direction: Direction }) {
+export function MeterBar({ value, tone = "default", size = "md" }: MeterBarProps) {
+  const height = size === "sm" ? "h-0.75" : "h-2.25";
+  const fill = tone === "core" ? "bg-core-fill" : "bg-ink/45";
   return (
-    <div className="h-2.25 bg-ink/8">
-      <span
-        className={`block h-full ${TREND_FILL[direction]}`}
-        style={{ width: `${value}%` }}
-      />
+    <div className={`${height} bg-ink/8`}>
+      <span className={`block h-full ${fill}`} style={{ width: `${value}%` }} />
     </div>
   );
 }
 
-/* ─── Sparkline ─── DESIGN.md §3.3
-   Nine bars on a baseline. Heights are data, so they stay inline. */
+/* ─── Async state ─── DESIGN.md §3.3
+   Loading, failure and empty all take one panel so a section keeps its footprint
+   while the request is in flight. */
 
-interface SparklineProps {
-  direction: Direction;
-  seed: number;
-  height: number;
-  width: number;
+interface StatePanelProps {
+  children: ReactNode;
+  tone?: "muted" | "error";
 }
 
-export function Sparkline({ direction, seed, height, width }: SparklineProps) {
-  const samples = walk(direction, seed);
+export function StatePanel({ children, tone = "muted" }: StatePanelProps) {
+  const color = tone === "error" ? "text-error" : "text-ink/55";
   return (
-    <span className="flex items-end gap-0.5" style={{ height, width }}>
-      {samples.map((v, i) => (
-        <span
-          key={i}
-          className={`block flex-1 opacity-90 ${TREND_FILL[direction]}`}
-          style={{ height: Math.round((v / 100) * height) }}
-        />
-      ))}
-    </span>
+    <div
+      role="status"
+      className={`border border-ink/22 bg-panel px-4.5 py-9 text-center font-mono font-light text-[12.5px]/[1.6] ${color}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -108,19 +92,13 @@ export function Sparkline({ direction, seed, height, width }: SparklineProps) {
 interface StatTileProps {
   label: string;
   value: string;
-  /** Deltas take the trend color in place of ink. */
-  tone?: Direction;
 }
 
-export function StatTile({ label, value, tone }: StatTileProps) {
+export function StatTile({ label, value }: StatTileProps) {
   return (
     <div className="bg-panel p-4">
       <MicroLabel variant="tile">{label}</MicroLabel>
-      <div
-        className={`mt-2 font-serif text-[30px]/[1] tabular-nums ${tone ? TREND_TEXT[tone] : "text-ink"}`}
-      >
-        {value}
-      </div>
+      <div className="mt-2 font-serif text-[30px]/[1] tabular-nums text-ink">{value}</div>
     </div>
   );
 }
@@ -147,47 +125,6 @@ export function Chip({ label, selected, onSelect }: ChipProps) {
     >
       {label}
     </button>
-  );
-}
-
-/* ─── Search bar ─── DESIGN.md §3.6
-   Two flush cells in one bordered box: no rounding, no gap, no shadow. */
-
-interface SearchBarProps {
-  placeholder: string;
-  action: string;
-  /** The closing band uses tighter padding and smaller type than the hero. */
-  compact?: boolean;
-}
-
-export function SearchBar({ placeholder, action, compact = false }: SearchBarProps) {
-  const fieldPad = compact ? "p-[17px]" : "px-5 py-[18px]";
-  const fieldType = compact ? "text-[13px]/[1]" : "text-[14px]/[1]";
-  const btnPad = compact ? "px-6 py-[17px]" : "px-6 py-[18px]";
-  const btnType = compact ? "text-[11px]/[1]" : "text-[11.5px]/[1]";
-  const id = `search-${action.replace(/\s+/g, "-").toLowerCase()}`;
-
-  return (
-    <form
-      className="flex border border-ink/45 bg-panel"
-      onSubmit={(e) => e.preventDefault()}
-    >
-      <label htmlFor={id} className="sr-only">
-        {placeholder}
-      </label>
-      <input
-        id={id}
-        type="search"
-        placeholder={placeholder}
-        className={`flex-1 bg-transparent font-mono font-light text-ink outline-none placeholder:text-ink/45 focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-ink ${fieldPad} ${fieldType}`}
-      />
-      <button
-        type="submit"
-        className={`cursor-pointer bg-ink font-mono text-paper tracking-[.12em] uppercase ${btnPad} ${btnType}`}
-      >
-        {action}
-      </button>
-    </form>
   );
 }
 
@@ -239,5 +176,56 @@ export function Section({ children, id, className = "" }: SectionProps) {
     >
       {children}
     </section>
+  );
+}
+
+/* ─── Select ─── DESIGN.md §3.6
+   A native <select>, so keyboard and screen-reader behaviour come for free, with
+   the chrome stripped back to the square bordered field of the search bar. Options
+   are always supplied, never typed, so a filter can only hold a value the data has. */
+
+interface SelectProps {
+  label: string;
+  value: string;
+  options: readonly FilterOption[];
+  onChange: (value: string) => void;
+  /** Text for the empty value, e.g. "Any skill". Omit when a choice is required. */
+  anyLabel?: string;
+  disabled?: boolean;
+}
+
+export function Select({
+  label,
+  value,
+  options,
+  onChange,
+  anyLabel,
+  disabled = false,
+}: SelectProps) {
+  return (
+    <label className="block">
+      <MicroLabel variant="tile">{label}</MicroLabel>
+      <span className="relative mt-2.5 block">
+        <select
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          className="block w-full cursor-pointer appearance-none rounded-none border border-ink/45 bg-panel py-2.75 pr-6 pl-2.5 font-mono text-[12px]/[1.2] sm:pr-8 sm:pl-3 sm:text-[12.5px]/[1.2] text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-default disabled:border-ink/25 disabled:text-ink/45"
+        >
+          {anyLabel !== undefined && <option value="">{anyLabel}</option>}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 sm:right-3 font-mono text-[10px]/[1] text-ink/55"
+        >
+          ▾
+        </span>
+      </span>
+    </label>
   );
 }

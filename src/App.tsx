@@ -1,24 +1,15 @@
-import { useState } from "react";
+import { Outlet, ScrollRestoration } from "react-router";
 
 import { Masthead } from "./sections/Masthead";
-import { Hero } from "./sections/Hero";
-import { TopSkills } from "./sections/TopSkills";
-import { TopCertificates } from "./sections/TopCertificates";
-import { TopRoles } from "./sections/TopRoles";
-import { Closing } from "./sections/Closing";
-import { DEFAULT_THRESHOLDS } from "./lib/trend";
 
+/** The frame every route renders inside. Routes themselves are declared in main.tsx. */
 function App() {
-  const [role, setRole] = useState("Data Analyst");
-
   return (
     <main className="graph-paper min-h-screen">
       <Masthead />
-      <Hero role={role} onRoleChange={setRole} />
-      <TopSkills role={role} thresholds={DEFAULT_THRESHOLDS} />
-      <TopCertificates thresholds={DEFAULT_THRESHOLDS} />
-      <TopRoles thresholds={DEFAULT_THRESHOLDS} />
-      <Closing />
+      <Outlet />
+      {/* New pages open at the top; back and forward return to where the reader was. */}
+      <ScrollRestoration />
     </main>
   );
 }
