@@ -42,5 +42,3 @@ npm run preview  # serve the production build
 
 `/jobs` is a client-side route, so whatever serves the production build must fall back to
 `index.html` for unknown paths. The Vite dev and preview servers already do.
-
-Product intent is documented in [PRODUCT.md](PRODUCT.md); the visual system in [DESIGN.md](DESIGN.md).
